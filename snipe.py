@@ -24,7 +24,7 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")  # จาก Discord Developer Portal
 
 @bot.event
 async def on_ready():
-    print(f'{bot.user} has landed and is ready to snipe stocks!')
+    print(f"{bot.user} is online!")
 
 @bot.command(name='snipe')
 async def snipe_stock(ctx, symbol: str):
@@ -160,10 +160,15 @@ async def snipe_stock(ctx, symbol: str):
         await ctx.send(embed=embed)
 
 def run_flask():
-    app.run(host='0.0.0.0', port=int(os.getenv("PORT", 10000)))
+    port = int(os.environ.get("PORT", 10000))
+    print(f"Starting Flask server on port {port}")
+    app.run(host='0.0.0.0', port=port)
 
-# รันบอท
+def run_discord():
+    bot.run(os.getenv("DISCORD_TOKEN"))
+
 if __name__ == "__main__":
-    flask_thread = threading.Thread(target=run_flask)
-    flask_thread.start()
-    bot.run(DISCORD_TOKEN)
+    # ให้ Flask รันใน thread
+    threading.Thread(target=run_flask, daemon=True).start()
+    # ให้ Render เห็น process หลัก (Discord bot จะค้างอยู่ไม่จบ)
+    run_discord()
